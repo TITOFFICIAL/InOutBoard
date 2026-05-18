@@ -10,11 +10,9 @@
       margin: 0;
       padding: 0;
     }
-
     html {
       font-size: 16px;
     }
-
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: #ffffff;
@@ -25,14 +23,13 @@
       justify-content: flex-start;
       padding: clamp(2rem, 6vw, 3rem);
     }
-
     .dashboard {
       width: 100%;
+      max-width: 600px;
       display: flex;
       flex-direction: column;
       gap: clamp(1rem, 2.5vw, 1.5rem);
     }
-
     .item {
       display: flex;
       align-items: center;
@@ -45,43 +42,35 @@
       -webkit-tap-highlight-color: transparent;
       border: 2px solid transparent;
     }
-
     .item:focus-visible {
       outline: 3px solid #333;
       outline-offset: 2px;
     }
-
     .item:active {
       transform: scale(0.98);
     }
-
     .item[data-occupied="false"] {
       background: #2ecc71;
       box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
     }
-
     .item[data-occupied="true"] {
       background: #e74c3c;
       box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
     }
-
     .item-title {
       font-size: clamp(1rem, 3vw, 1.25rem);
       font-weight: 600;
       color: #fff;
     }
-
     .item-status {
       font-size: clamp(0.875rem, 2.5vw, 1rem);
       color: rgba(255, 255, 255, 0.85);
       margin-top: 0.5rem;
     }
-
     .item-info {
       display: flex;
       flex-direction: column;
     }
-
     .toggle-track {
       position: relative;
       width: clamp(3rem, 8vw, 3.5rem);
@@ -91,11 +80,9 @@
       transition: background-color 0.3s ease;
       flex-shrink: 0;
     }
-
     .item[data-occupied="true"] .toggle-track {
       background: rgba(255, 255, 255, 0.5);
     }
-
     .toggle-thumb {
       position: absolute;
       top: 3px;
@@ -107,11 +94,9 @@
       transition: transform 0.3s ease;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
-
     .item[data-occupied="true"] .toggle-thumb {
       transform: translateX(calc(clamp(3rem, 8vw, 3.5rem) - clamp(1.5rem, 4vw, 1.75rem)));
     }
-
     .sr-only {
       position: absolute;
       width: 1px;
@@ -123,7 +108,6 @@
       white-space: nowrap;
       border: 0;
     }
-
     @media (hover: hover) {
       .item:hover {
         transform: scale(1.02);
@@ -136,19 +120,45 @@
 </head>
 <body>
   <main class="dashboard" role="list" aria-label="Room availability dashboard">
+    <!-- Items are injected via JS -->
   </main>
 
   <script>
+    // Initial default state. Adjust titles or add/remove rooms as you like.
+    const DEFAULT_STATE = [
+      { id: 1, title: 'Room 1', occupied: false },
+      { id: 2, title: 'Room 2', occupied: true },
+      { id: 3, title: 'Room 3', occupied: false }
+    ];
+
+    const STORAGE_KEY = 'inoutboard-state-v1';
     const dashboard = document.querySelector('.dashboard');
 
-    async function fetchState() {
-      const res = await fetch('/api/state');
-      return res.json();
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [...DEFAULT_STATE];
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [...DEFAULT_STATE];
+        return parsed;
+      } catch {
+        return [...DEFAULT_STATE];
+      }
     }
 
-    async function toggleItem(id) {
-      const res = await fetch(`/api/state/${id}`, { method: 'PUT' });
-      const state = await res.json();
+    function saveState(state) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch {
+        // ignore storage errors
+      }
+    }
+
+    function toggleItem(id) {
+      const state = loadState().map(item =>
+        item.id === id ? { ...item, occupied: !item.occupied } : item
+      );
+      saveState(state);
       render(state);
     }
 
@@ -157,11 +167,13 @@
       state.forEach(item => {
         const el = document.createElement('div');
         el.className = 'item';
-        el.setAttribute('role', 'listitem');
+        el.setAttribute('role', 'switch');
         el.setAttribute('data-occupied', item.occupied);
         el.setAttribute('tabindex', '0');
-        el.setAttribute('aria-label', `${item.title}: ${item.occupied ? 'Occupied' : 'Free'}. Press to toggle.`);
-        el.setAttribute('role', 'switch');
+        el.setAttribute(
+          'aria-label',
+          `${item.title}: ${item.occupied ? 'Occupied' : 'Free'}. Press to toggle.`
+        );
         el.setAttribute('aria-checked', item.occupied);
 
         el.innerHTML = `
@@ -186,12 +198,8 @@
       });
     }
 
-    fetchState().then(render);
-
-    setInterval(async () => {
-      const state = await fetchState();
-      render(state);
-    }, 5000);
+    // Initial render from localStorage (or defaults)
+    render(loadState());
   </script>
 </body>
 </html>

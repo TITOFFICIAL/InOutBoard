@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>In/Out Dashboard</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      font-size: 16px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #ffffff;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: clamp(2rem, 6vw, 3rem);
+    }
+
+    .dashboard {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: clamp(1rem, 2.5vw, 1.5rem);
+    }
+
+    .item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: clamp(1rem, 2vw, 1.5rem);
+      border-radius: clamp(0.75rem, 2vw, 1rem);
+      cursor: pointer;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.1s ease;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      border: 2px solid transparent;
+    }
+
+    .item:focus-visible {
+      outline: 3px solid #333;
+      outline-offset: 2px;
+    }
+
+    .item:active {
+      transform: scale(0.98);
+    }
+
+    .item[data-occupied="false"] {
+      background: #2ecc71;
+      box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+    }
+
+    .item[data-occupied="true"] {
+      background: #e74c3c;
+      box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+    }
+
+    .item-title {
+      font-size: clamp(1rem, 3vw, 1.25rem);
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .item-status {
+      font-size: clamp(0.875rem, 2.5vw, 1rem);
+      color: rgba(255, 255, 255, 0.85);
+      margin-top: 0.5rem;
+    }
+
+    .item-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .toggle-track {
+      position: relative;
+      width: clamp(3rem, 8vw, 3.5rem);
+      height: clamp(1.5rem, 4vw, 1.75rem);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.3);
+      transition: background-color 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .item[data-occupied="true"] .toggle-track {
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    .toggle-thumb {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: calc(clamp(1.5rem, 4vw, 1.75rem) - 6px);
+      height: calc(clamp(1.5rem, 4vw, 1.75rem) - 6px);
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .item[data-occupied="true"] .toggle-thumb {
+      transform: translateX(calc(clamp(3rem, 8vw, 3.5rem) - clamp(1.5rem, 4vw, 1.75rem)));
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (hover: hover) {
+      .item:hover {
+        transform: scale(1.02);
+      }
+      .item:hover:active {
+        transform: scale(0.98);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="dashboard" role="list" aria-label="Room availability dashboard">
+  </main>
+
+  <script>
+    const dashboard = document.querySelector('.dashboard');
+
+    async function fetchState() {
+      const res = await fetch('/api/state');
+      return res.json();
+    }
+
+    async function toggleItem(id) {
+      const res = await fetch(`/api/state/${id}`, { method: 'PUT' });
+      const state = await res.json();
+      render(state);
+    }
+
+    function render(state) {
+      dashboard.innerHTML = '';
+      state.forEach(item => {
+        const el = document.createElement('div');
+        el.className = 'item';
+        el.setAttribute('role', 'listitem');
+        el.setAttribute('data-occupied', item.occupied);
+        el.setAttribute('tabindex', '0');
+        el.setAttribute('aria-label', `${item.title}: ${item.occupied ? 'Occupied' : 'Free'}. Press to toggle.`);
+        el.setAttribute('role', 'switch');
+        el.setAttribute('aria-checked', item.occupied);
+
+        el.innerHTML = `
+          <div class="item-info">
+            <span class="item-title">${item.title}</span>
+            <span class="item-status">${item.occupied ? 'Occupied' : 'Free'}</span>
+          </div>
+          <div class="toggle-track" aria-hidden="true">
+            <div class="toggle-thumb"></div>
+          </div>
+        `;
+
+        el.addEventListener('click', () => toggleItem(item.id));
+        el.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleItem(item.id);
+          }
+        });
+
+        dashboard.appendChild(el);
+      });
+    }
+
+    fetchState().then(render);
+
+    setInterval(async () => {
+      const state = await fetchState();
+      render(state);
+    }, 5000);
+  </script>
+</body>
+</html>

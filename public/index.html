@@ -167,9 +167,7 @@
     }
 
     async function toggleItem(id) {
-      const res = await fetch(`/api/state/${id}`, { method: 'PUT' });
-      const state = await res.json();
-      render(state);
+      await fetch(`/api/state/${id}`, { method: 'PUT' });
     }
 
     function render(state) {
@@ -212,8 +210,15 @@
 
     fetchState().then(render);
 
-    const events = new EventSource('/api/events');
-    events.onmessage = (e) => render(JSON.parse(e.data));
+    function connectSSE() {
+      const events = new EventSource('/api/events');
+      events.onmessage = (e) => render(JSON.parse(e.data));
+      events.onerror = () => {
+        events.close();
+        setTimeout(connectSSE, 1000);
+      };
+    }
+    connectSSE();
   </script>
 </body>
 </html>

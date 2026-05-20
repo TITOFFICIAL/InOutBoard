@@ -48,6 +48,7 @@ app.get('/api/events', (req, res) => {
     'Connection': 'keep-alive'
   });
   res.flushHeaders();
+  res.write(`data: ${JSON.stringify(readState())}\n\n`);
   clients.add(res);
   req.on('close', () => clients.delete(res));
 });

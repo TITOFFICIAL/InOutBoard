@@ -78,30 +78,31 @@
     }
     .toggle-track {
       position: relative;
-      width: 52px;
-      height: 28px;
-      border-radius: 999px;
+      width: 64px;
+      height: 32px;
+      border-radius: 24px;
       background: rgba(255, 255, 255, 0.3);
       transition: background-color 0.3s ease;
       flex-shrink: 0;
       margin-left: 16px;
     }
     .item[data-occupied="true"] .toggle-track {
-      background: rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.5);
     }
     .toggle-thumb {
       position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
+      top: 4px;
+      left: 4px;
+      width: 24px;
+      height: 24px;
+      border-radius: 12px;
       background: #fff;
       transition: transform 0.3s ease;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 8px;
     }
     .toggle-thumb .icon-play,
     .toggle-thumb .icon-stop {
@@ -121,7 +122,7 @@
       opacity: 1;
     }
     .item[data-occupied="true"] .toggle-thumb {
-      transform: translateX(24px);
+      transform: translateX(32px);
     }
 
     @media (min-width: 600px) {
@@ -139,16 +140,7 @@
         font-size: 20px;
       }
       .toggle-track {
-        width: 56px;
-        height: 30px;
         margin-left: 24px;
-      }
-      .toggle-thumb {
-        width: 24px;
-        height: 24px;
-      }
-      .item[data-occupied="true"] .toggle-thumb {
-        transform: translateX(26px);
       }
     }
 
@@ -196,8 +188,8 @@
             </div>
             <div class="toggle-track" aria-hidden="true">
               <div class="toggle-thumb">
-                <svg class="icon-play" width="10" height="12" viewBox="0 0 10 12" fill="none"><polygon points="0,0 10,6 0,12" fill="#2ecc71"/></svg>
-                <svg class="icon-stop" width="10" height="10" viewBox="0 0 10 10" fill="none"><rect width="10" height="10" rx="1" fill="#e74c3c"/></svg>
+                <svg class="icon-play" width="8" height="9" viewBox="0 0 8 9.24" fill="none"><polygon points="0,0 8,4.62 0,9.24" fill="#2ecc71"/></svg>
+                <svg class="icon-stop" width="8" height="8" viewBox="0 0 8 8" fill="none"><rect width="8" height="8" rx="1" fill="#e74c3c"/></svg>
               </div>
             </div>
           `;

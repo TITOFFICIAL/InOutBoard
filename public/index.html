@@ -161,35 +161,37 @@
     }
 
     function render(state) {
-      dashboard.innerHTML = '';
       state.forEach(item => {
-        const el = document.createElement('div');
-        el.className = 'item';
-        el.setAttribute('role', 'switch');
+        let el = document.querySelector(`[data-id="${item.id}"]`);
+        if (!el) {
+          el = document.createElement('div');
+          el.className = 'item';
+          el.setAttribute('role', 'switch');
+          el.setAttribute('data-id', item.id);
+          el.setAttribute('tabindex', '0');
+          el.innerHTML = `
+            <div class="item-info">
+              <span class="item-title"></span>
+              <span class="item-status"></span>
+            </div>
+            <div class="toggle-track" aria-hidden="true">
+              <div class="toggle-thumb"></div>
+            </div>
+          `;
+          el.addEventListener('click', () => toggleItem(item.id));
+          el.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              toggleItem(item.id);
+            }
+          });
+          dashboard.appendChild(el);
+        }
         el.setAttribute('data-occupied', item.occupied);
-        el.setAttribute('tabindex', '0');
         el.setAttribute('aria-label', `${item.title}: ${item.occupied ? 'Occupied' : 'Free'}. Press to toggle.`);
         el.setAttribute('aria-checked', item.occupied);
-
-        el.innerHTML = `
-          <div class="item-info">
-            <span class="item-title">${item.title}</span>
-            <span class="item-status">${item.occupied ? 'Occupied' : 'Free'}</span>
-          </div>
-          <div class="toggle-track" aria-hidden="true">
-            <div class="toggle-thumb"></div>
-          </div>
-        `;
-
-        el.addEventListener('click', () => toggleItem(item.id));
-        el.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            toggleItem(item.id);
-          }
-        });
-
-        dashboard.appendChild(el);
+        el.querySelector('.item-title').textContent = item.title;
+        el.querySelector('.item-status').textContent = item.occupied ? 'Occupied' : 'Free';
       });
     }
 

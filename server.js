@@ -28,8 +28,28 @@ function writeState(state) {
   fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
 }
 
+const clients = new Set();
+
+function broadcast(state) {
+  const data = JSON.stringify(state);
+  for (const client of clients) {
+    client.write(`data: ${data}\n\n`);
+  }
+}
+
 app.get('/api/state', (req, res) => {
   res.json(readState());
+});
+
+app.get('/api/events', (req, res) => {
+  res.set({
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive'
+  });
+  res.flushHeaders();
+  clients.add(res);
+  req.on('close', () => clients.delete(res));
 });
 
 app.put('/api/state/:id', (req, res) => {
@@ -39,6 +59,7 @@ app.put('/api/state/:id', (req, res) => {
   if (!item) return res.status(404).json({ error: 'Not found' });
   item.occupied = !item.occupied;
   writeState(state);
+  broadcast(state);
   res.json(state);
 });
 

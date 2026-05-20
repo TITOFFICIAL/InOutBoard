@@ -211,6 +211,9 @@
     }
 
     fetchState().then(render);
+
+    const events = new EventSource('/api/events');
+    events.onmessage = (e) => render(JSON.parse(e.data));
   </script>
 </body>
 </html>

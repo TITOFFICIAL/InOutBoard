@@ -99,6 +99,26 @@
       background: #fff;
       transition: transform 0.3s ease;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .toggle-thumb .icon-play,
+    .toggle-thumb .icon-stop {
+      position: absolute;
+      transition: opacity 0.3s ease;
+    }
+    .toggle-thumb .icon-play {
+      opacity: 1;
+    }
+    .toggle-thumb .icon-stop {
+      opacity: 0;
+    }
+    .item[data-occupied="true"] .toggle-thumb .icon-play {
+      opacity: 0;
+    }
+    .item[data-occupied="true"] .toggle-thumb .icon-stop {
+      opacity: 1;
     }
     .item[data-occupied="true"] .toggle-thumb {
       transform: translateX(24px);
@@ -175,7 +195,10 @@
               <span class="item-status"></span>
             </div>
             <div class="toggle-track" aria-hidden="true">
-              <div class="toggle-thumb"></div>
+              <div class="toggle-thumb">
+                <svg class="icon-play" width="10" height="12" viewBox="0 0 10 12" fill="none"><polygon points="0,0 10,6 0,12" fill="#2ecc71"/></svg>
+                <svg class="icon-stop" width="10" height="10" viewBox="0 0 10 10" fill="none"><rect width="10" height="10" rx="1" fill="#e74c3c"/></svg>
+              </div>
             </div>
           `;
           el.addEventListener('click', () => toggleItem(item.id));

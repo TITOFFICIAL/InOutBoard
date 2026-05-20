@@ -14,10 +14,10 @@ function readState() {
     return JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
   } catch {
     const initial = [
-      { id: 1, title: 'Room 1', occupied: false },
-      { id: 2, title: 'Room 2', occupied: false },
-      { id: 3, title: 'Room 3', occupied: false },
-      { id: 4, title: 'Room 4', occupied: false }
+      { id: 1, title: 'INERTIA', occupied: false },
+      { id: 2, title: 'ORIGINAL', occupied: false },
+      { id: 3, title: '93 tpm', occupied: false },
+      { id: 4, title: 'TOO MANY AND ONE', occupied: false }
     ];
     fs.writeFileSync(STATE_FILE, JSON.stringify(initial, null, 2));
     return initial;
